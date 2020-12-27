@@ -1,7 +1,7 @@
 # investment-website
 ## Author: Taylor Moyle
 ## A demo website to showcase standard web development skills and design techniques
-## Designed in VueJS
+## Developed with VueJS
 
 ## Project setup
 ```
