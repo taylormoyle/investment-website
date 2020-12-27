@@ -4,6 +4,13 @@
             <v-toolbar-title class="overline" style="font-size: 20px!important;">
                 <a href="/" style="text-decoration: none; color: white;">Investment Demo</a>
             </v-toolbar-title>
+            <v-progress-linear
+                :active="isLoading"
+                :indeterminate="isLoading"
+                absolute
+                bottom
+                color="blue"
+            ></v-progress-linear>
             <v-spacer></v-spacer>
             <div v-show="$vuetify.breakpoint.smAndUp">
                 <v-tabs background-color="#272727" slider-color="blue" slider-size="4" right height="64">
@@ -25,5 +32,16 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 
+export default {
+    computed: {
+        ...mapGetters({
+            isLoading: 'isLoading',
+        }),
+    },
+    created() {
+        console.log(`isLoading: ${this.isLoading}`);
+    }
+};
 </script>

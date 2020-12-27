@@ -84,10 +84,9 @@
 
 <script>
 import { compact } from '@/sdk/input';
-import Vue from 'vue';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
-Vue.use(VueAxios, axios);
+import { Client } from '@/client';
+
+const client = new Client();
 
 export default {
     data() {
@@ -133,15 +132,16 @@ export default {
     },
     methods: {
         async submitFinancialInfo() {
-            // Simulate network call
+            // Start loading bar while performing network task
+            this.$store.commit('loading', { submitFinancialInfo: true });
+
+            // Sample network call to client.investment.qualify, then store result from promise and continue with decision tree
             const financialInfo = { investmentAmount: this.investmentAmount, investmentType: this.investmentType, netWorth: this.netWorth, yearlyIncome: this.yearlyIncome, creditScore: this.creditScore };
             console.log(`financialInfo: ${JSON.stringify(financialInfo)}`);
-            Vue.axios.post('http://examplequalificationwebsite.com', financialInfo)
-            .then((response) => {
-                // TODO: Create API to run this code
-                console.log(`response: ${response}`);
-            })
-            // TODO: Qualification website will do this check, and return answer in promise
+            const { isQualified } = await client.investment.qualify({ financialInfo });
+            this.isQualified = isQualified;
+
+            // NOTE: Qualification service will do this check, and return answer in promised 'isQualified' value
             var testResponse = { data: { disqualifiedMessage: null, isQualified: false } };
             if (financialInfo.investmentAmount > financialInfo.yearlyIncome * 0.2) {
                 testResponse.data.isQualified = false;
@@ -162,12 +162,17 @@ export default {
             this.isQualified = testResponse.data.isQualified;
             this.disqualifiedMessage = testResponse.data.disqualifiedMessage;
             console.log(`isQualified: ${this.isQualified}, status: ${this.status}, disqualifiedMessage: ${this.disqualifiedMessage}`);
+
             // If !isQualified or status is bad request, send user to /disqualification with message query. Else, send user to /create-account
-            if (!this.isQualified || this.status === 400) {
-                this.$router.push({ path: '/disqualification', query: { disqualifiedMessage: this.disqualifiedMessage } });
-            } else {
-                this.$router.push('/create-account');
-            }
+            // NOTE: Timeout is to simulate waiting on network call
+            setTimeout(() => {
+                if (!this.isQualified || this.status === 400) {
+                    this.$router.push({ path: '/disqualification', query: { disqualifiedMessage: this.disqualifiedMessage } });
+                } else {
+                    this.$router.push('/create-account');
+                }
+                this.$store.commit('loading', { submitFinancialInfo: false });
+            }, 2000);
         },
     }
 }
